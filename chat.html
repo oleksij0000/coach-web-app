@@ -3,73 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Чат с тренером</title>
+  <title>Тренер</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    * { box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: #18222d;
+      background-color: #17212b;
       color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
-      padding: 15px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      height: 95vh;
+      height: 100vh;
+      box-sizing: border-box;
     }
+
     .header {
       text-align: center;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
       font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 12px;
     }
+
     .chat-box {
       flex: 1;
       overflow-y: auto;
-      margin: 15px 0;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      padding-bottom: 10px;
     }
+
     .message {
-      max-width: 82%;
+      max-width: 80%;
       padding: 10px 14px;
-      border-radius: 14px;
-      font-size: 15px;
+      border-radius: 12px;
+      font-size: 14px;
       line-height: 1.4;
       word-wrap: break-word;
     }
-    .user-msg {
-      align-self: flex-end;
-      background-color: #2b5278;
-      color: #ffffff;
-    }
+
     .coach-msg {
+      background-color: #232e3c;
       align-self: flex-start;
-      background-color: #212d3b;
-      border: 1px solid #2b394a;
+      border-bottom-left-radius: 2px;
     }
+
+    .user-msg {
+      background-color: #2b5278;
+      align-self: flex-end;
+      border-bottom-right-radius: 2px;
+    }
+
     .input-area {
       display: flex;
-      gap: 10px;
+      gap: 8px;
+      padding-top: 10px;
     }
+
     input {
       flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: #212d3b;
+      background-color: #242f3d;
+      border: 1px solid #38485c;
+      border-radius: 8px;
+      padding: 10px 12px;
       color: #fff;
+      font-size: 14px;
       outline: none;
     }
+
     button {
-      padding: 12px 18px;
-      border-radius: 10px;
+      background-color: #5288c1;
       border: none;
-      background-color: #2481cc;
+      border-radius: 8px;
       color: #fff;
+      padding: 0 16px;
       font-weight: bold;
       cursor: pointer;
+    }
+
+    button:active {
+      opacity: 0.8;
     }
   </style>
 </head>
@@ -83,17 +97,17 @@
     </div>
   </div>
 
-  <form class="input-area" onsubmit="event.preventDefault(); sendMessage();">
-    <input type="text" id="userInput" placeholder="Напиши сообщение..." autocomplete="off" />
-    <button type="submit">Отправить</button>
-  </form>
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Напиши сообщение..." onkeydown="if(event.key==='Enter') sendMessage()">
+    <button onclick="sendMessage()">Отправить</button>
+  </div>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // СЮДА ВСТАВЛЯЕМ ССЫЛКУ ТУННЕЛЯ (без лишнего текста!)
-  const SERVER_URL = "https://be9281b5540fb2f0-185-159-162-217.serveousercontent.com/api/chat";
+    // Твой актуальный адрес ngrok
+    const SERVER_URL = "https://emphases-shady-lagged.ngrok-free.dev/api/chat";
 
     async function sendMessage() {
       const input = document.getElementById('userInput');
@@ -102,7 +116,7 @@
 
       const chatBox = document.getElementById('chatBox');
 
-      // 1. Показываем твое сообщение в окне
+      // 1. Сообщение пользователя
       const userDiv = document.createElement('div');
       userDiv.className = 'message user-msg';
       userDiv.innerText = text;
@@ -111,23 +125,24 @@
       input.value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // 2. Показываем статус ожидания
+      // 2. Индикатор ожидания
       const loadingDiv = document.createElement('div');
       loadingDiv.className = 'message coach-msg';
       loadingDiv.innerText = 'Думаю...';
       chatBox.appendChild(loadingDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // 3. Отправляем запрос прямо в Python-скрипт (без вызова tg.sendData!)
+      // 3. Отправка POST-запроса
       try {
         const response = await fetch(SERVER_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
           body: JSON.stringify({ message: text })
         });
         const data = await response.json();
-
-        // 4. Заменяем «Думаю...» на ответ Gemini прямо в этом же окне!
         loadingDiv.innerText = data.reply;
       } catch (err) {
         loadingDiv.innerText = "❌ Ошибка связи с сервером.";
