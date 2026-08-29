@@ -37,6 +37,7 @@
       border-radius: 14px;
       font-size: 15px;
       line-height: 1.4;
+      word-wrap: break-word;
     }
     .user-msg {
       align-self: flex-end;
@@ -78,11 +79,11 @@
 
   <div class="chat-box" id="chatBox">
     <div class="message coach-msg">
-      Привет! Задай любой вопрос по тренировке или нагрузке.
+      Привет! Задай любой вопрос по тренировке, заезду или пульсу.
     </div>
   </div>
 
-  <form class="input-area" id="chatForm" onsubmit="event.preventDefault(); sendMessage();">
+  <form class="input-area" onsubmit="event.preventDefault(); sendMessage();">
     <input type="text" id="userInput" placeholder="Напиши сообщение..." autocomplete="off" />
     <button type="submit">Отправить</button>
   </form>
@@ -91,14 +92,17 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    function sendMessage() {
+    // СЮДА ВСТАВЛЯЕМ ССЫЛКУ ТУННЕЛЯ (без лишнего текста!)
+    const SERVER_URL = "https://ТВОЙ_ТУННЕЛЬ.lhr.life/api/chat";
+
+    async function sendMessage() {
       const input = document.getElementById('userInput');
       const text = input.value.trim();
       if (!text) return;
 
       const chatBox = document.getElementById('chatBox');
 
-      // Отображаем сообщение в окне
+      // 1. Показываем твое сообщение в окне
       const userDiv = document.createElement('div');
       userDiv.className = 'message user-msg';
       userDiv.innerText = text;
@@ -107,8 +111,28 @@
       input.value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // Отправляем данные боту (без обращения к сторонним серверам)
-      tg.sendData(text);
+      // 2. Показываем статус ожидания
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'message coach-msg';
+      loadingDiv.innerText = 'Думаю...';
+      chatBox.appendChild(loadingDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // 3. Отправляем запрос прямо в Python-скрипт (без вызова tg.sendData!)
+      try {
+        const response = await fetch(SERVER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await response.json();
+
+        // 4. Заменяем «Думаю...» на ответ Gemini прямо в этом же окне!
+        loadingDiv.innerText = data.reply;
+      } catch (err) {
+        loadingDiv.innerText = "❌ Ошибка связи с сервером.";
+      }
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
   </script>
 </body>
