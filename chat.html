@@ -78,11 +78,10 @@
 
   <div class="chat-box" id="chatBox">
     <div class="message coach-msg">
-      Привет! Я на связи. Пиши любой вопрос по тренировкам или самочувствию.
+      Привет! Задай любой вопрос по тренировке или нагрузке.
     </div>
   </div>
 
-  <!-- preventDefault отменяет стандартную отправку формы по Enter -->
   <form class="input-area" id="chatForm" onsubmit="event.preventDefault(); sendMessage();">
     <input type="text" id="userInput" placeholder="Напиши сообщение..." autocomplete="off" />
     <button type="submit">Отправить</button>
@@ -92,18 +91,14 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    // ВАЖНО: Укажи адрес твоего сервера ngrok (или внешнего IP с портом 8080)
-    const SERVER_URL = "https://434752c3a7cb82.lhr.life/api/chat";
-Tip (1): Add your SSH key to reserve names and keep URLs stable. Pro removes the browser warning page: https://console.serveo.net/settings?n=1&src=ssh_nudge&v=A      ";
-
-    async function sendMessage() {
+    function sendMessage() {
       const input = document.getElementById('userInput');
       const text = input.value.trim();
       if (!text) return;
 
       const chatBox = document.getElementById('chatBox');
 
-      // 1. Рисуем твое сообщение
+      // Отображаем сообщение внутри формы
       const userDiv = document.createElement('div');
       userDiv.className = 'message user-msg';
       userDiv.innerText = text;
@@ -112,29 +107,8 @@ Tip (1): Add your SSH key to reserve names and keep URLs stable. Pro removes the
       input.value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // 2. Рисуем временный статус «Печатает...»
-      const loadingDiv = document.createElement('div');
-      loadingDiv.className = 'message coach-msg';
-      loadingDiv.innerText = 'Думаю...';
-      chatBox.appendChild(loadingDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      // 3. Отправляем запрос на твой локальный сервер в PyCharm
-      try {
-        const response = await fetch(SERVER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
-        });
-        const data = await response.json();
-
-        // Заменяем статус ответа на реальный текст от Gemini
-        loadingDiv.innerText = data.reply;
-      } catch (err) {
-        loadingDiv.innerText = "❌ Ошибка связи с сервером. Проверь, запущен ли ngrok и Trainer.py.";
-        console.error(err);
-      }
-      chatBox.scrollTop = chatBox.scrollHeight;
+      // Передаем данные боту
+      tg.sendData(text);
     }
   </script>
 </body>
