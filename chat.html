@@ -98,7 +98,7 @@
 
       const chatBox = document.getElementById('chatBox');
 
-      // Отображаем сообщение внутри формы
+      // Отображаем сообщение в окне
       const userDiv = document.createElement('div');
       userDiv.className = 'message user-msg';
       userDiv.innerText = text;
@@ -107,7 +107,7 @@
       input.value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // Передаем данные боту
+      // Отправляем данные боту (без обращения к сторонним серверам)
       tg.sendData(text);
     }
   </script>
