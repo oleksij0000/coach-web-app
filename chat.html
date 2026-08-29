@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Чат с тренером</title>
+  <!-- Подключаем официальный скрипт Telegram Web App -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--tg-theme-bg-color, #18222d);
+      color: var(--tg-theme-text-color, #ffffff);
+      margin: 0;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      height: 93vh;
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-weight: bold;
+    }
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      margin: 15px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .message {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+    .user-msg {
+      align-self: flex-end;
+      background-color: var(--tg-theme-button-color, #2b5278);
+      color: var(--tg-theme-button-text-color, #ffffff);
+    }
+    .coach-msg {
+      align-self: flex-start;
+      background-color: #212d3b;
+      border: 1px solid #2b394a;
+    }
+    .input-area {
+      display: flex;
+      gap: 10px;
+    }
+    input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: #212d3b;
+      color: #fff;
+      font-size: 15px;
+    }
+    button {
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: none;
+      background-color: var(--tg-theme-button-color, #2481cc);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">🧠 Чат с тренером</div>
+
+  <div class="chat-box" id="chatBox">
+    <div class="message coach-msg">
+      Привет! Как прошла тренировка? Жду твои вопросы по нагрузке или пульсу!
+    </div>
+  </div>
+
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Напиши сообщение..." />
+    <button onclick="sendMessage()">Отправить</button>
+  </div>
+
+  <script>
+    // Инициализация Telegram Web App
+    const tg = window.Telegram.WebApp;
+    tg.expand(); // Разворачиваем окно на весь экран
+
+    function sendMessage() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      // Отображаем сообщение в окне
+      const chatBox = document.getElementById('chatBox');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message user-msg';
+      msgDiv.innerText = text;
+      chatBox.appendChild(msgDiv);
+
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Отправляем данные обратно боту
+      tg.sendData(JSON.stringify({ action: "coach_question", message: text }));
+    }
+  </script>
+</body>
+</html>
